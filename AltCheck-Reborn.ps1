@@ -1,70 +1,58 @@
-param ($Mode='None', $monitorAltserverInterval=30, $monitoriDeviceInterval=60, $iMobileDeviceFolder="imobiledevice", $altServerPath="C:\Program Files (x86)\AltServer\AltServer.exe", $appleServiceName="Apple Mobile Device Service")
-$version = "1.1"
+param ($monitoriDeviceInterval=120, $successInterval = 60, $iMobileDeviceFolder="imobiledevice", $altServerPath="C:\Program Files (x86)\AltServer\AltServer.exe", $appleServiceName="Apple Mobile Device Service")
+$version = "1.0"
 
 Set-Location -Path $PsScriptRoot
 
-if ($Mode -eq "None") {
-    Write-Host AltCheck-Reborn Version $version
-    Write-Host
-    Write-Host Syntax:
-    Write-Host        AltCheck-Reborn -Mode serviceMonitor
-    Write-Host        AltCheck-Reborn -Mode checkAltServer
-    Write-Host
-    Write-Host Grab the latest version on GitHub: https://github.com/DiscordDigital
-}
-
 function startAltServer {
-    Write-Host [ACTION] Started AltServer
-    Start-Process $altServerPath
+	Write-Host [ACTION] Started AltServer
+	Start-Process $altServerPath
 }
 
 function checkAltServer {
-    $process = Get-Process AltServer -ErrorAction SilentlyContinue
-    if ($process) {
-        return $true;
-    } else {
-        return $false;
-    }
+	$process = Get-Process AltServer -ErrorAction SilentlyContinue
+	if ($process) {
+		return $true;
+	} else {
+		return $false;
+	}
 }
 
 function restartAppleMobileDeviceService {
-    Write-Host [INFO] Restarting $appleServiceName
-    try {
-        Restart-Service -Name $appleServiceName -ErrorAction Stop
-        Write-Host [OK] Action completed
-        Write-Host [INFO] To give $appleServiceName time to detect your iPhone, waiting now for $monitoriDeviceInterval seconds..
-    } catch {
-        Write-Host "[ERROR] Can't restart $appleServiceName. Try running this script as Administrator." 
-        Write-Host [INFO] Waiting $monitoriDeviceInterval seconds before attempting again.
-    }
-    Start-Sleep $monitoriDeviceInterval
+	Write-Host $(Get-Date) [INFO] Restarting $appleServiceName
+	try {
+		Restart-Service -Name $appleServiceName -ErrorAction Stop
+		Write-Host $(Get-Date) [OK] Action completed
+		Write-Host $(Get-Date) [INFO] To give $appleServiceName time to detect your iPhone, waiting now for $monitoriDeviceInterval seconds..
+	} catch {
+		Write-Host $(Get-Date) [ERROR] Cannot restart $appleServiceName. Try running this script as Administrator. 
+		Write-Host $(Get-Date) [INFO] Waiting $monitoriDeviceInterval seconds before attempting again.
+		Write-Host $(Get-Date) [INFO] Grab the latest version on GitHub: https://github.com/DiscordDigital
+	}
+	Start-Sleep $monitoriDeviceInterval
 }
 
-if ($Mode -eq "serviceMonitor") {
-    while($true) {
-        $deviceCount = (cmd /c $iMobileDeviceFolder\idevice_id.exe -l).Count
-        if ($deviceCount -eq "0") {
-            Write-Host [WARN] No devices found. Restarting $appleServiceName.
-            restartAppleMobileDeviceService
-        } else {
-            Write-Host "[INFO] $deviceCount device(s) found, no action needed."
-            Write-Host [INFO] Waiting for $monitoriDeviceInterval seconds before checking again.
-            Start-Sleep $monitoriDeviceInterval
-        }
-       
-    }
-}
-
-if ($Mode -eq "checkAltServer") {
-    while($true) {
-        $altServerStatus = checkAltServer
-        if ($altServerStatus) {
-            Write-Host [INFO] AltServer is running
-        } else {
-            Write-Host "[INFO] AltServer isn't running.. Calling startAltServer"
-            startAltServer
-        }
-        Write-Host [INFO] Waiting $monitorAltserverInterval seconds before checking again!
-        Start-Sleep $monitorAltserverInterval
-    }
+while($true) {
+	$deviceCount = 0
+	Write-Host $(Get-Date) [INFO] Checking AltServer
+	$altServerStatus = checkAltServer
+	if ($altServerStatus) {
+		Write-Host $(Get-Date) [INFO] AltServer is running
+	}
+	else {
+		Write-Host $(Get-Date) [INFO] AltServer is not running. Calling startAltServer
+		startAltServer
+	}
+	
+	Write-Host $(Get-Date) [INFO] Checking $appleServiceName
+	# $deviceCount = ("$iMobileDeviceFolder\idevice_id.exe -l" | Measure-Object).Count
+	$deviceCount = (cmd /c $iMobileDeviceFolder\idevice_id.exe -l).Count
+	if ($deviceCount -lt 1) {
+		Write-Host $(Get-Date) [WARN] No devices found. Restarting $appleServiceName.
+		restartAppleMobileDeviceService
+	} else {
+		Write-Host "$(Get-Date) [INFO] $deviceCount device(s) found, no action needed."
+		Write-Host $(Get-Date) [INFO] Waiting for $successInterval seconds before checking again.
+		Start-Sleep $successInterval
+	}
+	Write-Host 
 }
