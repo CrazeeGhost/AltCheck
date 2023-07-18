@@ -22,7 +22,7 @@ function restartAppleMobileDeviceService {
 	try {
 		Restart-Service -Name $appleServiceName -ErrorAction Stop
 		Write-Host $(Get-Date) [OK] Action completed
-		Write-Host $(Get-Date) [INFO] To give $appleServiceName time to detect your iPhone, waiting now for $monitoriDeviceInterval seconds..
+		Write-Host $(Get-Date) [INFO] Waiting $monitoriDeviceInterval seconds before $appleServiceName attempts detecting iPhone
 	} catch {
 		Write-Host $(Get-Date) [ERROR] Cannot restart $appleServiceName. Try running this script as Administrator. 
 		Write-Host $(Get-Date) [INFO] Waiting $monitoriDeviceInterval seconds before attempting again.
@@ -50,7 +50,7 @@ while($true) {
 		Write-Host $(Get-Date) [WARN] No devices found. Restarting $appleServiceName.
 		restartAppleMobileDeviceService
 	} else {
-		Write-Host $(Get-Date) [INFO] $deviceCount device(s) found, no action needed.
+		Write-Host $(Get-Date) [INFO] $deviceCount devices found, no action needed.
 		Write-Host $(Get-Date) [INFO] Waiting for $successInterval seconds before checking again.
 		Start-Sleep $successInterval
 	}
