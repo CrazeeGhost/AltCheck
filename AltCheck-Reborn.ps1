@@ -50,7 +50,7 @@ while($true) {
 		Write-Host $(Get-Date) [WARN] No devices found. Restarting $appleServiceName.
 		restartAppleMobileDeviceService
 	} else {
-		Write-Host $(Get-Date) [INFO] $deviceCount devices found, no action needed.
+		Write-Host $(Get-Date) [INFO] $deviceCount devices found. No action needed.
 		Write-Host $(Get-Date) [INFO] Waiting for $successInterval seconds before checking again.
 		Start-Sleep $successInterval
 	}
