@@ -4,7 +4,7 @@ $version = "1.0"
 Set-Location -Path $PsScriptRoot
 
 function startAltServer {
-	Write-Host [ACTION] Started AltServer
+	Write-Host $(Get-Date) [ACTION] Started AltServer
 	Start-Process $altServerPath
 }
 
