@@ -47,7 +47,7 @@ while($true) {
 	# $deviceCount = ("$iMobileDeviceFolder\idevice_id.exe -l" | Measure-Object).Count
 	$deviceCount = (cmd /c $iMobileDeviceFolder\idevice_id.exe -l).Count
 	if ($deviceCount -lt 1) {
-		Write-Host $(Get-Date) [WARN] No devices found. Restarting $appleServiceName.
+		Write-Host $(Get-Date) [WARN] No devices found. Restarting $appleServiceName
 		restartAppleMobileDeviceService
 	} else {
 		Write-Host $(Get-Date) [INFO] $deviceCount devices found. No action needed.
